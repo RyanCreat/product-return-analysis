@@ -1,0 +1,33 @@
+name: 构建 Windows EXE
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 安装 Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: 安装依赖
+        run: pip install openpyxl pyinstaller
+
+      - name: 打包为 EXE
+        run: |
+          pyinstaller --onefile --windowed --name "品退率分析工具" 品退率分析工具.py
+
+      - name: 上传 EXE
+        uses: actions/upload-artifact@v4
+        with:
+          name: 品退率分析工具-Windows
+          path: dist/品退率分析工具.exe
+          retention-days: 30
