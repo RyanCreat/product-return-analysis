@@ -1,4 +1,4 @@
-name: 构建 Windows EXE
+name: 构建
 
 on:
   push:
@@ -7,7 +7,17 @@ on:
 
 jobs:
   build:
-    runs-on: windows-latest
+    strategy:
+      matrix:
+        include:
+          - os: windows-latest
+            artifact: 品退率分析工具-Windows
+            filename: 品退率分析工具.exe
+          - os: macos-latest
+            artifact: 品退率分析工具-macOS
+            filename: 品退率分析工具.app
+
+    runs-on: ${{ matrix.os }}
 
     steps:
       - name: 检出代码
@@ -21,13 +31,19 @@ jobs:
       - name: 安装依赖
         run: pip install openpyxl pyinstaller
 
-      - name: 打包为 EXE
+      - name: 打包 Windows EXE
+        if: matrix.os == 'windows-latest'
         run: |
           pyinstaller --onefile --windowed --name "品退率分析工具" 品退率分析工具.py
 
-      - name: 上传 EXE
+      - name: 打包 macOS App
+        if: matrix.os == 'macos-latest'
+        run: |
+          pyinstaller --onefile --windowed --name "品退率分析工具" 品退率分析工具.py
+
+      - name: 上传
         uses: actions/upload-artifact@v4
         with:
-          name: 品退率分析工具-Windows
-          path: dist/品退率分析工具.exe
+          name: ${{ matrix.artifact }}
+          path: dist/${{ matrix.filename }}
           retention-days: 30
